@@ -1,17 +1,21 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 import java.util.Random;
+import javax.sound.sampled.*;
 import javax.swing.*;
 
 public class Game extends JFrame implements ActionListener {
 
   // declare the JFrame component
-  JLabel lblHeader, lblTimer, lblSpotsTaken, lblPlayer, lblBot;
-  JButton btnBox[], btnAudio, btnReset, btnSettings;
+  JLabel lblHeader, lblIconTimer, lblTimer, lblIconSpotsTaken, lblSpotsTaken, lblIconPlayer, lblPlayer, lblIconBot, lblBot;
+  JButton btnBox[], btnMusic, btnReset, btnAudio;
   JPanel pnlInfo, pnlBox, pnlFooter, pnlAudio, pnlReset, pnlSettings;
-  ImageIcon icO, icX, icTimer, icSpotsTaken, icPlayer, icBot;
-  ImageIcon icAudio, icAudioOff, icReset, icSettings;
+  ImageIcon icO, icX, icTimer, icTimerOff, icSpotsTaken, icSpotsTakenOff, icPlayer, icPlayerOff, icPlayerOne, icPlayerTwo, icBot, icBotOff, icMusic, icMusicOff, icVolumeUp, icVolumeDown, icVolumeOff, icReset, icSettings;
+  Clip cMusic, cClick1, cClick2;
+  Timer timer;
 
   // declare the instance variables
   // needed to use in different methods
@@ -19,13 +23,12 @@ public class Game extends JFrame implements ActionListener {
   Statement stmt = null;
   ResultSet rs = null;
   String gamemode, icon;
-  int board, loop, validateLane;
-  int width, height, leftMargin, lblHeaderSize, lblInfoSize, icSize;
-  boolean player = true;
-  int index, wins = 0, losses = 0, draws = 0;
-  char BLANK = ' ', O = 'O', X = 'X';
-  char cells[];
-  int grid[][];
+  int board, loop, validateLane, width, height, leftMargin, lblHeaderSize, lblInfoSize, icSize, index, wins =
+    0, losses = 0, draws = 0, grid[][];
+  boolean player = true, turn = true, gameStart =
+    false, soundLoaded, matchTimer, boardInfo, playerCounter;
+  char BLANK = ' ', O = 'O', X = 'X', cells[];
+  long start, finish, timeElapsed;
 
   public Game() {
     // rename the frame title
@@ -160,11 +163,21 @@ public class Game extends JFrame implements ActionListener {
     icO = new ImageIcon("images/o.png");
     icX = new ImageIcon("images/x.png");
     icTimer = resizeImg(new ImageIcon("images/timer.png"), icSize);
+    icTimerOff = resizeImg(new ImageIcon("images/timer-off.png"), icSize);
     icSpotsTaken = resizeImg(new ImageIcon("images/spots-taken.png"), icSize);
+    icSpotsTakenOff =
+      resizeImg(new ImageIcon("images/spots-taken-off.png"), icSize);
     icPlayer = resizeImg(new ImageIcon("images/player.png"), icSize);
+    icPlayerOff = resizeImg(new ImageIcon("images/player-off.png"), icSize);
+    icPlayerOne = resizeImg(new ImageIcon("images/player-1.png"), icSize);
+    icPlayerTwo = resizeImg(new ImageIcon("images/player-2.png"), icSize);
     icBot = resizeImg(new ImageIcon("images/bot.png"), icSize);
-    icAudio = resizeImg(new ImageIcon("images/audio.png"), icSize);
-    icAudioOff = resizeImg(new ImageIcon("images/audio-off.png"), icSize);
+    icBotOff = resizeImg(new ImageIcon("images/bot-off.png"), icSize);
+    icMusic = resizeImg(new ImageIcon("images/music.png"), icSize);
+    icMusicOff = resizeImg(new ImageIcon("images/music-off.png"), icSize);
+    icVolumeUp = resizeImg(new ImageIcon("images/volume-up.png"), icSize);
+    icVolumeDown = resizeImg(new ImageIcon("images/volume-down.png"), icSize);
+    icVolumeOff = resizeImg(new ImageIcon("images/volume-off.png"), icSize);
     icReset = resizeImg(new ImageIcon("images/reset.png"), icSize);
     icSettings = resizeImg(new ImageIcon("images/settings.png"), icSize);
 
@@ -172,12 +185,46 @@ public class Game extends JFrame implements ActionListener {
     // the gui for the Game
     showGUI();
 
+    // set selected match timer from the database
+    if (matchTimer) lblIconTimer.setIcon(icTimer); else lblIconTimer.setIcon(
+      icTimerOff
+    );
+
+    // set selected board info from the database
+    if (boardInfo) lblIconSpotsTaken.setIcon(
+      icSpotsTaken
+    ); else lblIconSpotsTaken.setIcon(icSpotsTakenOff);
+
+    // set selected player counter from the database
+    if (playerCounter) {
+      if (gamemode.equals("Singleplayer")) {
+        lblIconPlayer.setIcon(icPlayer);
+        lblIconBot.setIcon(icBot);
+      } else {
+        lblIconPlayer.setIcon(icPlayerOne);
+        lblIconBot.setIcon(icPlayerTwo);
+      }
+    } else {
+      lblIconPlayer.setIcon(icPlayerOff);
+      lblIconBot.setIcon(icBotOff);
+    }
+
     // needed method to show the frame
     setSize(width, height);
     setVisible(true);
     setResizable(false);
     setLocationRelativeTo(null);
-    // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    // getContentPane().setBackground(new Color(54, 69, 79));
+
+    // dispose current frame when close and
+    // stop the background music
+    WindowListener windowExit = new WindowAdapter() {
+      public void windowClosing(WindowEvent e) {
+        cMusic.stop();
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+      }
+    };
+    addWindowListener(windowExit);
   }
 
   // method to design the
@@ -211,9 +258,13 @@ public class Game extends JFrame implements ActionListener {
     // panel info to display the timer,
     // spots taken, count player win,
     // and count bot win
+    lblIconTimer = new JLabel();
     lblTimer = new JLabel("0");
+    lblIconSpotsTaken = new JLabel();
     lblSpotsTaken = new JLabel("0");
+    lblIconPlayer = new JLabel();
     lblPlayer = new JLabel("0");
+    lblIconBot = new JLabel();
     lblBot = new JLabel("0");
     pnlInfo = new JPanel();
     pnlInfo.setLayout(new GridLayout(1, 4));
@@ -221,13 +272,13 @@ public class Game extends JFrame implements ActionListener {
     gbc.gridy = 1;
     gbc.gridwidth = board;
     gbc.gridheight = 1;
-    pnlInfo.add(new JLabel(icTimer));
+    pnlInfo.add(lblIconTimer);
     pnlInfo.add(lblTimer);
-    pnlInfo.add(new JLabel(icSpotsTaken));
+    pnlInfo.add(lblIconSpotsTaken);
     pnlInfo.add(lblSpotsTaken);
-    pnlInfo.add(new JLabel(icPlayer));
+    pnlInfo.add(lblIconPlayer);
     pnlInfo.add(lblPlayer);
-    pnlInfo.add(new JLabel(icBot));
+    pnlInfo.add(lblIconBot);
     pnlInfo.add(lblBot);
     add(pnlInfo, gbc);
 
@@ -254,32 +305,69 @@ public class Game extends JFrame implements ActionListener {
 
     gbc.insets = new Insets(10, 0, 0, 0);
 
+    // try to load the sound from the file
+    try {
+      // open an audio input stream
+      File fMusic = new File("audio/angrybird.wav");
+      File fClick1 = new File("audio/pew.wav");
+      File fClick2 = new File("audio/paww.wav");
+
+      AudioInputStream adMusic = AudioSystem.getAudioInputStream(fMusic);
+      AudioInputStream adClick1 = AudioSystem.getAudioInputStream(fClick1);
+      AudioInputStream adClick2 = AudioSystem.getAudioInputStream(fClick2);
+
+      // get a sound clip resource, open audio clip, and
+      // load samples from the audio input stream
+      cMusic = AudioSystem.getClip();
+      cClick1 = AudioSystem.getClip();
+      cClick2 = AudioSystem.getClip();
+
+      cMusic.open(adMusic);
+      cClick1.open(adClick1);
+      cClick2.open(adClick2);
+
+      soundLoaded = true;
+    } catch (UnsupportedAudioFileException e) {
+      soundLoaded = false;
+      e.printStackTrace();
+    } catch (IOException e) {
+      soundLoaded = false;
+      e.printStackTrace();
+    } catch (LineUnavailableException e) {
+      soundLoaded = false;
+      e.printStackTrace();
+    }
+
+    // start background music and loop
+    cMusic.start();
+    cMusic.loop(Clip.LOOP_CONTINUOUSLY);
+
     // panel footer to display the audio,
     // reset, and settings button
-    btnAudio = new JButton(icAudio);
+    btnMusic = new JButton(icMusic);
+    btnMusic.setPreferredSize(new Dimension(40, 40));
+    btnMusic.addActionListener(this);
+    btnMusic.setBorderPainted(false);
+    btnMusic.setFocusPainted(false);
+    btnMusic.setContentAreaFilled(false);
+    btnReset = new JButton(icReset);
+    btnReset.setText("Reset");
+    btnReset.setPreferredSize(new Dimension(board * 60 - 80, 40));
+    btnReset.addActionListener(this);
+    btnAudio = new JButton(icVolumeUp);
     btnAudio.setPreferredSize(new Dimension(40, 40));
     btnAudio.addActionListener(this);
     btnAudio.setBorderPainted(false);
     btnAudio.setFocusPainted(false);
     btnAudio.setContentAreaFilled(false);
-    btnReset = new JButton(icReset);
-    btnReset.setText("Reset");
-    btnReset.setPreferredSize(new Dimension(board * 60 - 80, 40));
-    btnReset.addActionListener(this);
-    btnSettings = new JButton(icSettings);
-    btnSettings.setPreferredSize(new Dimension(40, 40));
-    btnSettings.addActionListener(this);
-    btnSettings.setBorderPainted(false);
-    btnSettings.setFocusPainted(false);
-    btnSettings.setContentAreaFilled(false);
     pnlFooter = new JPanel();
     gbc.gridx = 0;
     gbc.gridy = board + 2;
     gbc.gridwidth = board;
     gbc.gridheight = 1;
-    pnlFooter.add(btnAudio);
+    pnlFooter.add(btnMusic);
     pnlFooter.add(btnReset);
-    pnlFooter.add(btnSettings);
+    pnlFooter.add(btnAudio);
     add(pnlFooter, gbc);
 
     // styling the font-family, font-weight,
@@ -298,9 +386,30 @@ public class Game extends JFrame implements ActionListener {
     if (gamemode.equals("Singleplayer")) { // singleplayer
       for (int i = 0; i < loop; i++) {
         if (e.getSource() == btnBox[i]) {
+          // start timer
+          if (matchTimer && !gameStart) {
+            start = System.currentTimeMillis();
+            gameStart = true;
+
+            timer =
+              new Timer(
+                1000,
+                new ActionListener() {
+                  public void actionPerformed(ActionEvent e) {
+                    float seconds =
+                      (System.currentTimeMillis() - start) / 1000F;
+                    lblTimer.setText(String.valueOf(Math.round(seconds)));
+                  }
+                }
+              );
+            timer.start();
+          }
+
           if (cells[i] == BLANK) {
             cells[i] = O;
             btnBox[i].setIcon(icO);
+            cClick1.start();
+            cClick1.setFramePosition(0);
             if (isWin(O)) finish(O); else if (isDraw()) finish(BLANK); else {
               compTurn();
               if (isWin(X)) finish(X); else if (isDraw()) finish(BLANK);
@@ -311,23 +420,57 @@ public class Game extends JFrame implements ActionListener {
     } else { // multiplayer
       for (int i = 0; i < loop; i++) {
         if (e.getSource() == btnBox[i]) {
-          if (btnBox[i].getText() == "") {
+          // start timer
+          if (matchTimer && !gameStart) {
+            start = System.currentTimeMillis();
+            gameStart = true;
+
+            timer =
+              new Timer(
+                1000,
+                new ActionListener() {
+                  public void actionPerformed(ActionEvent e) {
+                    float seconds =
+                      (System.currentTimeMillis() - start) / 1000F;
+                    lblTimer.setText(String.valueOf(Math.round(seconds)));
+                  }
+                }
+              );
+            timer.start();
+          }
+
+          if (cells[i] == BLANK) {
             if (player == true) {
               cells[i] = O;
               btnBox[i].setIcon(icO);
               lblHeader.setText("Player 2 Turn!");
+              cClick1.start();
+              cClick1.setFramePosition(0);
               player = false;
               if (isWin(O)) finish(O); else if (isDraw()) finish(BLANK);
             } else {
               cells[i] = X;
               btnBox[i].setIcon(icX);
               lblHeader.setText("Player 1 Turn!");
+              cClick2.start();
+              cClick2.setFramePosition(0);
               player = true;
               if (isWin(X)) finish(X); else if (isDraw()) finish(BLANK);
             }
           }
         }
       }
+    }
+
+    // calculate how many cells spots have been taken
+    if (boardInfo) {
+      int calcSpots = 0;
+      for (int i = 0; i < loop; i++) {
+        if (cells[i] != BLANK) {
+          ++calcSpots;
+        }
+      }
+      lblSpotsTaken.setText(String.valueOf(calcSpots));
     }
 
     if (e.getSource() == btnReset) {
@@ -342,12 +485,46 @@ public class Game extends JFrame implements ActionListener {
       // on the gamemode selected on the settings
       if (gamemode.equals("Singleplayer")) lblHeader.setText(
         "Tic-Tac-Toe"
-      ); else lblHeader.setText("Player 1 Turn!");
+      ); else {
+        if (turn) {
+          lblHeader.setText("Player 2 Turn!");
+          player = false;
+          turn = !turn;
+        } else {
+          lblHeader.setText("Player 1 Turn!");
+          player = true;
+          turn = !turn;
+        }
+      }
+
+      if (matchTimer) lblTimer.setText("0");
+      if (boardInfo) lblSpotsTaken.setText("0");
+    } else if (e.getSource() == btnMusic) {
+      if (soundLoaded) {
+        if (cMusic.isRunning()) {
+          cMusic.stop(); // Stop the player if it is still running
+          btnMusic.setIcon(icMusicOff);
+        } else {
+          cMusic.start(); // Start playing if audio is paused
+          btnMusic.setIcon(icMusic);
+        }
+      }
     } else if (e.getSource() == btnAudio) {
-      // handle audio button
-      // code here ...
-    } else if (e.getSource() == btnSettings) {
-      new Settings();
+      // volume control for background music
+      FloatControl volumeControl = (FloatControl) cMusic.getControl(
+        FloatControl.Type.MASTER_GAIN
+      );
+
+      if (btnAudio.getIcon() == icVolumeUp) {
+        volumeControl.setValue(-20.0f); // value to set the volume
+        btnAudio.setIcon(icVolumeDown);
+      } else if (btnAudio.getIcon() == icVolumeDown) {
+        volumeControl.setValue(-80.0f); // value to set the volume
+        btnAudio.setIcon(icVolumeOff);
+      } else {
+        volumeControl.setValue(0.0f); // value to set the volume
+        btnAudio.setIcon(icVolumeUp);
+      }
     }
   }
 
@@ -398,6 +575,9 @@ public class Game extends JFrame implements ActionListener {
       while (rs.next()) {
         gamemode = rs.getString("gamemode");
         board = rs.getInt("board");
+        matchTimer = rs.getBoolean("match_timer");
+        boardInfo = rs.getBoolean("board_info");
+        playerCounter = rs.getBoolean("player_counter");
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -413,8 +593,11 @@ public class Game extends JFrame implements ActionListener {
     int idx = searchRow(X); // complete a row of X and win if possible
     if (idx < 0) idx = searchRow(O); // or try to block O from winning
     if (idx < 0) do idx = random.nextInt(loop); while (cells[idx] != BLANK); // otherwise move randomly
+
     cells[idx] = X;
     btnBox[idx].setIcon(icX);
+    cClick2.start();
+    cClick2.setFramePosition(0);
   }
 
   // method for searching the final cells
@@ -674,6 +857,12 @@ public class Game extends JFrame implements ActionListener {
   // method for handling the actions
   // required once the game is finished
   void finish(char winner) {
+    // finish timer
+    if (matchTimer && gameStart) {
+      gameStart = false;
+      timer.stop();
+    }
+
     // announce result of last game
     if (gamemode.equals("Singleplayer")) {
       if (winner == O) {
@@ -681,6 +870,17 @@ public class Game extends JFrame implements ActionListener {
         ++wins;
       } else if (winner == X) {
         lblHeader.setText("Computer Win!");
+        ++losses;
+      } else {
+        lblHeader.setText("Tie!");
+        ++draws;
+      }
+    } else {
+      if (winner == O) {
+        lblHeader.setText("Player 1 Win!");
+        ++wins;
+      } else if (winner == X) {
+        lblHeader.setText("Player 2 Win!");
         ++losses;
       } else {
         lblHeader.setText("Tie!");

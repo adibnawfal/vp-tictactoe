@@ -3,6 +3,7 @@
   "java.project.outputPath": "bin",
   "java.project.referencedLibraries": [
     "lib/**/*.jar",
-    "c:\\Users\\adibnawfal\\Documents\\UTHM\\Course\\Year 2\\Semester 2\\BIE20404 - VISUAL PROGRAMMING\\Lab Activity\\Lab 6\\mysql-connector-j-8.0.33.jar"
+    "c:\\Users\\adibnawfal\\Documents\\UTHM\\Course\\Year 2\\Semester 2\\BIE20404 - VISUAL PROGRAMMING\\Lab Activity\\Lab 6\\mysql-connector-j-8.0.33.jar",
+    "c:\\Users\\adibnawfal\\OneDrive\\Documents\\UTHM\\Course\\BIE20404 - VISUAL PROGRAMMING\\Lab Activity\\Lab 6\\mysql-connector-j-8.0.33.jar"
   ]
 }
