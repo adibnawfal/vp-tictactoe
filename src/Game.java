@@ -32,9 +32,13 @@ public class Game extends Config implements ActionListener {
     // retrieve data from the database and
     // run the next code after retrieval is finished
     try {
-      Thread newThread = new Thread(() -> {
-        getData();
-      });
+      Thread newThread = new Thread(
+        new Runnable() {
+          public void run() {
+            getData();
+          }
+        }
+      );
       newThread.start();
       newThread.join();
     } catch (InterruptedException e) {
