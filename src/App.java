@@ -4,92 +4,107 @@ import javax.swing.*;
 
 public class App extends JFrame implements ActionListener {
 
-  // declare the JFrame component
-  JLabel lblHeader;
-  JButton btnPlay, btnSettings;
-  JPanel pnlPlay, pnlSettings;
-  ImageIcon icPlay, icSettings;
+  // declare instance variable
+  private JLabel mainBackground, lblHeader;
+  private JButton btnPlay, btnSettings, btnExit;
+  private ImageIcon icPlay, icSettings, icExit;
+  private Color clrWhite, clrMaroon;
+  private int styBorder;
 
   public App() {
-    // rename the frame title
-    // that will show on the windows bar
-    super("Tic-Tac-Toe");
-    // initialize the icon image
-    icPlay = resizeImg(new ImageIcon("images/play.png"), 22);
-    icSettings = resizeImg(new ImageIcon("images/settings.png"), 22);
+    // create icon with specific size
+    icPlay = resizeImg(new ImageIcon("images/play.png"), 32);
+    icSettings = resizeImg(new ImageIcon("images/settings.png"), 32);
+    icExit = resizeImg(new ImageIcon("images/exit.png"), 32);
+
+    // create color and border thickness for styling
+    clrWhite = new Color(250, 250, 250);
+    clrMaroon = new Color(99, 8, 70);
+    styBorder = 2;
 
     // call showGUI() method to display
-    // the gui for the Home
+    // the gui for the main screen
     showGUI();
 
-    // needed method to show the frame
-    setSize(250, 230);
+    // show the frame
+    setSize(1132, 660);
+    setUndecorated(true);
     setVisible(true);
     setResizable(false);
     setLocationRelativeTo(null);
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    getContentPane().setBackground(clrMaroon);
   }
 
   // method to design the
-  // gui for the game
+  // gui for the main screen
   public void showGUI() {
-    // create a JFrame layout component
-    // to use for arranging the JFrame component
-    GridBagLayout layout = new GridBagLayout();
-    GridBagConstraints gbc = new GridBagConstraints();
-    gbc.fill = GridBagConstraints.HORIZONTAL;
-    setLayout(layout);
+    // background image
+    mainBackground = new JLabel(new ImageIcon("images/main-bg.gif"));
+    mainBackground.setLayout(null);
 
-    // define the margin of the component
-    // with the following arguments rules
-    // (top, left, bottom, right)
-    gbc.insets = new Insets(0, 0, 20, 0);
+    // header title
+    lblHeader = new JLabel("TIC-TAC-TOE");
+    lblHeader.setBounds(519, 109, 400, 56);
+    lblHeader.setFont(new Font("Roboto", Font.BOLD, 48));
+    lblHeader.setForeground(clrWhite);
 
-    lblHeader = new JLabel("Tic-Tac-Toe", JLabel.CENTER);
-    gbc.gridx = 0; // specify the row position
-    gbc.gridy = 0; // specify the column position
-    gbc.gridwidth = 1; // specify the width of the row
-    gbc.gridheight = 1; // specify the height of the column
-    add(lblHeader, gbc); // add the component to the frame
-
-    gbc.insets = new Insets(0, 0, 0, 0);
-
-    btnPlay = new JButton(icPlay);
-    pnlPlay = new JPanel();
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-    gbc.gridwidth = 1;
-    gbc.gridheight = 1;
-    btnPlay.setText("Play");
-    btnPlay.setPreferredSize(new Dimension(150, 40));
+    // button to play the game
+    btnPlay = new JButton("Play", icPlay);
     btnPlay.addActionListener(this);
-    pnlPlay.add(btnPlay);
-    add(pnlPlay, gbc);
+    btnPlay.setBounds(520, 195, 180, 60);
+    btnPlay.setFont(new Font("Roboto", Font.BOLD, 18));
+    btnPlay.setForeground(clrWhite);
+    btnPlay.setBackground(clrMaroon);
+    btnPlay.setFocusPainted(false);
+    btnPlay.setIconTextGap(20);
+    btnPlay.setHorizontalAlignment(SwingConstants.LEFT);
+    btnPlay.setBorder(
+      BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(clrWhite, styBorder),
+        BorderFactory.createEmptyBorder(0, 26, 0, 0)
+      )
+    );
 
-    btnSettings = new JButton(icSettings);
-    pnlSettings = new JPanel();
-    gbc.gridx = 0;
-    gbc.gridy = 2;
-    gbc.gridwidth = 1;
-    gbc.gridheight = 1;
-    btnSettings.setText("Settings");
-    btnSettings.setPreferredSize(new Dimension(150, 40));
+    // button to go to the settings
+    btnSettings = new JButton("Settings", icSettings);
     btnSettings.addActionListener(this);
-    pnlSettings.add(btnSettings);
-    add(pnlSettings, gbc);
+    btnSettings.setBounds(520, 270, 180, 60);
+    btnSettings.setFont(new Font("Roboto", Font.BOLD, 18));
+    btnSettings.setForeground(clrWhite);
+    btnSettings.setBackground(clrMaroon);
+    btnSettings.setFocusPainted(false);
+    btnSettings.setIconTextGap(20);
+    btnSettings.setHorizontalAlignment(SwingConstants.LEFT);
+    btnSettings.setBorder(
+      BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(clrWhite, styBorder),
+        BorderFactory.createEmptyBorder(0, 26, 0, 0)
+      )
+    );
 
-    // styling the font-family, font-weight,
-    // and font-size of the label component
-    lblHeader.setFont(new Font("Open Sans", Font.BOLD, 22));
-  }
+    // button to exit the game
+    btnExit = new JButton("Exit", icExit);
+    btnExit.addActionListener(this);
+    btnExit.setBounds(520, 345, 180, 60);
+    btnExit.setFont(new Font("Roboto", Font.BOLD, 18));
+    btnExit.setForeground(clrWhite);
+    btnExit.setBackground(clrMaroon);
+    btnExit.setFocusPainted(false);
+    btnExit.setIconTextGap(20);
+    btnExit.setHorizontalAlignment(SwingConstants.LEFT);
+    btnExit.setBorder(
+      BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(clrWhite, styBorder),
+        BorderFactory.createEmptyBorder(0, 26, 0, 0)
+      )
+    );
 
-  // method to handle the button component
-  public void actionPerformed(ActionEvent e) {
-    if (e.getSource() == btnPlay) {
-      new Game();
-    } else if (e.getSource() == btnSettings) {
-      new Settings();
-    }
+    // add the component to the frame
+    mainBackground.add(lblHeader);
+    mainBackground.add(btnPlay);
+    mainBackground.add(btnSettings);
+    mainBackground.add(btnExit);
+    add(mainBackground);
   }
 
   // method to resize the image
@@ -99,6 +114,17 @@ public class App extends JFrame implements ActionListener {
       image.getScaledInstance(icSize, icSize, java.awt.Image.SCALE_SMOOTH);
     ImageIcon newIcon = new ImageIcon(image);
     return newIcon;
+  }
+
+  // method to handle the button component
+  public void actionPerformed(ActionEvent e) {
+    if (e.getSource().equals(btnPlay)) {
+      new Game();
+    } else if (e.getSource().equals(btnSettings)) {
+      new Settings();
+    } else if (e.getSource().equals(btnExit)) {
+      System.exit(0);
+    }
   }
 
   public static void main(String[] args) {
