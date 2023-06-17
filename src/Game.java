@@ -22,7 +22,8 @@ public class Game extends Config implements ActionListener {
   private int winPlayer, winBot, winPlayerOne, winPlayerTwo, board, grid[][], validateLane;
   private boolean isMusic, matchTimer, spotsTaken, winnerCounter, soundLoaded, player =
     true, turn = true, gameStart = false, isButtonEnabled = true;
-  private char BLANK = ' ', O = 'O', X = 'X', cells[];
+  private final char BLANK = ' ', O = 'O', X = 'X';
+  private char cells[];
   private long start;
 
   public Game() {
