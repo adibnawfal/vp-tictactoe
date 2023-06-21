@@ -8,14 +8,17 @@ This project intends to develop Tic-Tac-Toe Game Application in Java that offers
 
 ## Before Run the Game 🔥
 
-1. Import `tictactoe.sql` to MySQL
-2. Create **MySQL User Accounts** with the following details:
+1. Install [XAMPP](https://www.apachefriends.org/ "XAMPP Website")
+2. Import `tictactoe.sql` to MySQL Database
+3. Create **MySQL User Accounts** with the following details:
 
 | Type      | Details           |
 | --------- | ----------------- |
 | Username  | visualprogramming |
 | Password  | vp12345           |
 | Host name | localhost         |
+
+4. Add mysql connector to the Java project
 
 ## Folder Structure 📂
 
