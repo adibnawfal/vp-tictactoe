@@ -103,10 +103,11 @@ public class Settings extends Config implements ActionListener, ItemListener {
       btnWinnerCounter.setIcon(icToggleOff);
     }
 
+    //
+
     // show the frame
     frame.setSize(1132, 660);
     frame.setUndecorated(true);
-    // frame.setLayout(null);
     frame.setVisible(true);
     frame.setResizable(false);
     frame.setLocationRelativeTo(null);
@@ -366,6 +367,12 @@ public class Settings extends Config implements ActionListener, ItemListener {
     newConn();
 
     if (ie.getSource().equals(cbGamemode)) {
+      if (cbGamemode.getSelectedItem().equals("Singleplayer")) {
+        cbDifficulty.setEnabled(true);
+      } else {
+        cbDifficulty.setEnabled(false);
+      }
+
       try { // update gamemode selection
         stmt = conn.createStatement();
         stmt.executeUpdate(
