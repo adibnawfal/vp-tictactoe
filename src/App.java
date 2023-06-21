@@ -5,7 +5,7 @@ import javax.swing.*;
 public class App extends JFrame implements ActionListener {
 
   // declare instance variable
-  private JLabel mainBackground, lblHeader;
+  private JLabel mainBackground, lblHeader, lblAbout, lblAboutDesc;
   private JButton btnPlay, btnSettings, btnExit;
   private ImageIcon icPlay, icSettings, icExit;
   private Color clrWhite, clrMaroon;
@@ -99,11 +99,28 @@ public class App extends JFrame implements ActionListener {
       )
     );
 
+    // label for about header
+    lblAbout = new JLabel("About");
+    lblAbout.setBounds(519, 434, 100, 30);
+    lblAbout.setFont(new Font("Roboto", Font.PLAIN, 24));
+    lblAbout.setForeground(clrWhite);
+
+    // label for about description
+    String aboutDesc =
+      "Tic-tac-toe, also known as noughts and crosses or Xs and Os, is a classic pencil-and-paper game played on a grid of 3x3 squares. The game involves two players who take turns marking their respective symbols (traditionally \"X\" and \"O\") in empty squares on the grid.";
+    lblAboutDesc = new JLabel();
+    lblAboutDesc.setText("<html>" + aboutDesc + "</html>");
+    lblAboutDesc.setBounds(519, 484, 530, 70);
+    lblAboutDesc.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+    lblAboutDesc.setForeground(clrWhite);
+
     // add the component to the frame
     mainBackground.add(lblHeader);
     mainBackground.add(btnPlay);
     mainBackground.add(btnSettings);
     mainBackground.add(btnExit);
+    mainBackground.add(lblAbout);
+    mainBackground.add(lblAboutDesc);
     add(mainBackground);
   }
 

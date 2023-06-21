@@ -6,7 +6,7 @@ public class Settings extends Config implements ActionListener, ItemListener {
 
   // declare the instance variables
   private JFrame frame;
-  private JLabel settingsBackground, lblHeader, lblGamemode, lblDifficulty, lblBoard, lblMusic, lblMatchTimer, lblSpotsTaken, lblWinnerCounter;
+  private JLabel settingsBackground, lblHeader, lblGamemode, lblDifficulty, lblBoard, lblMusic, lblMatchTimer, lblSpotsTaken, lblWinnerCounter, lblQuotes, lblQuotesDesc;
   private JPanel pnlGamemode, pnlDifficulty, pnlBoard, pnlMusic, pnlMatchTimer, pnlSpotsTaken, pnlWinnerCounter;
   private JButton btnBack, btnResetDefault;
   private JToggleButton btnMatchTimer, btnSpotsTaken, btnWinnerCounter;
@@ -319,10 +319,25 @@ public class Settings extends Config implements ActionListener, ItemListener {
       )
     );
 
+    // label for quotes header
+    lblQuotes = new JLabel("Tic-Tac-Toe");
+    lblQuotes.setBounds(68, 524, 200, 30);
+    lblQuotes.setFont(new Font("Roboto", Font.PLAIN, 24));
+    lblQuotes.setForeground(clrWhite);
+
+    // label for quotes description
+    lblQuotesDesc =
+      new JLabel(
+        "Failure doesn\u2019t mean game over, it means try again with experience."
+      );
+    lblQuotesDesc.setBounds(68, 574, 530, 20);
+    lblQuotesDesc.setFont(new Font("Times New Roman", Font.PLAIN, 15));
+    lblQuotesDesc.setForeground(clrWhite);
+
     // button to reset all the settings to default
     btnResetDefault = new JButton("Reset To Default", icReset);
     btnResetDefault.addActionListener(this);
-    btnResetDefault.setBounds(825, 526, 247, 60);
+    btnResetDefault.setBounds(825, 525, 247, 60);
     btnResetDefault.setFont(new Font("Roboto", Font.BOLD, 18));
     btnResetDefault.setForeground(clrWhite);
     btnResetDefault.setBackground(clrMaroon);
@@ -342,6 +357,8 @@ public class Settings extends Config implements ActionListener, ItemListener {
     settingsBackground.add(pnlMatchTimer);
     settingsBackground.add(pnlSpotsTaken);
     settingsBackground.add(pnlWinnerCounter);
+    settingsBackground.add(lblQuotes);
+    settingsBackground.add(lblQuotesDesc);
     settingsBackground.add(btnResetDefault);
     frame.add(settingsBackground);
   }
